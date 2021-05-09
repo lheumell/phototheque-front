@@ -24,3 +24,6 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 # phototheque-front
 # phototheque-front
+
+
+# Create .env with VUE_APP_PATH_IMAGES for the path of images
