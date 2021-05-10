@@ -93,14 +93,14 @@ export default {
   },
   mounted() {
     axios
-      .get("http://localhost:9000/v1/phototheque/images?is_published=true", {
+      .get("http://localhost:9000/v1/phototheque/image/?isPublished=true&pageNo=0&pageSize=5", {
         headers: {
           Authorization: `Bearer ${window.localStorage.accessToken}`,
         },
       })
       .then((res) => {
         console.log(res.data);
-        this.images = res.data;
+        this.images = res.data.content;
       })
       .catch((error) => {
         console.error(error);

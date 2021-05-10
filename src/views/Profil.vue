@@ -15,7 +15,7 @@
                     {{ this.$store.state.email }}
                   </p>
                   <p>
-                    <span class="label">Username :</span> :
+                    <span class="label">Username :</span>
                     {{ this.$store.state.username }}
                   </p>
                 </v-col>

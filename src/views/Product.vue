@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="!loading">
     <v-container>
       <div class="row">
         <div class="col-md-5 col-sm-5 col-xs-12">
@@ -85,7 +85,7 @@
                       {{ detailImage.user.email }}
                     </p>
                     <p>
-                      <span class="label">Username :</span> :
+                      <span class="label">Username :</span>
                       {{ detailImage.user.username }}
                     </p>
                   </v-col>
@@ -103,6 +103,7 @@ import { script } from "../backend/script";
 import axios from "axios";
 export default {
   data: () => ({
+    loading: true,
     item: 5,
     detailImage: {},
   }),
@@ -189,6 +190,8 @@ export default {
       .catch((error) => {
         console.error(error);
       });
+
+    this.loading = false;
   },
 };
 </script>

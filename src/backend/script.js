@@ -13,8 +13,9 @@ export const script = {
 
     return newDate + " à " + newHour;
   },
-  getImageOfProduct() {
-    return require(`/home/leo/Documents/Cours/Java/JEE/BanqueIMG/pourGIT/phototheque-front/src/assets/logo.png`);
+  getImageOfProduct(filename) {
+    return require(`${process.env.VUE_APP_PATH_IMAGES}/${filename}/${filename}.png`);
   },
+  // /home/leo/Documents/Cours/Java/JEE/BanqueIMG/phototheque-api/src/main/resources/ProcessedPictures/${filename}/${filename}.png
   // '/home/leo/Documents/Cours/Java/JEE/BanqueIMG/phototheque-api/PhotothequePictures/${filename}/${filename}.png`
 };
