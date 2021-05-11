@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="!loading">
     <v-container>
       <div class="row">
         <div class="col-md-12 col-sm-12 col-xs-12">
@@ -74,6 +74,7 @@ import { mapGetters } from "vuex";
 export default {
   data: () => ({
     images: [],
+    loading: true,
   }),
   computed: {
     ...mapGetters(["isConnected"]),
@@ -84,10 +85,10 @@ export default {
         return "/connexion";
       }
     },
-      filteredImages() {
+    filteredImages() {
       if (this.$store.state.searchQuery) {
         return this.images.filter((item) => {
-         return item.title.startsWith(this.$store.state.searchQuery);
+          return item.title.startsWith(this.$store.state.searchQuery);
         });
       } else {
         return this.images;
@@ -104,13 +105,20 @@ export default {
   },
   mounted() {
     axios
-      .get("http://localhost:9000/v1/phototheque/images/top/10", {})
+      .get("http://localhost:9000/v1/phototheque/image/top", {
+        params: {
+          number: process.env.VUE_APP_NB_PRODUCTS_HOME,
+        },
+      })
       .then((res) => {
-        this.images = res.data;
+        this.images = res.data.content;
+        console.log(this.images);
       })
       .catch((error) => {
         console.error(error);
       });
+
+    this.loading = false;
   },
 };
 </script>

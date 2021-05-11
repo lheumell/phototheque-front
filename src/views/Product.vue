@@ -42,7 +42,27 @@
                 {{ djlPicture.probability.toFixed(2) }} %
               </div>
             </div>
-            <v-btn @click="downloadImage()"> Download </v-btn>
+            <v-divider></v-divider>
+            <v-row class="pt-6">
+              <v-col class="d-flex" cols="9">
+                <v-select
+                  :items="formats"
+                  v-model="selectedFormat"
+                  label="Formats"
+                ></v-select>
+              </v-col>
+              <v-col class="d-flex align-center" cols="2">
+                <v-btn
+                  @click="selectFormatToDownload()"
+                  fab
+                  dark
+                  small
+                  color="dark"
+                >
+                  <v-icon dark>mdi-download </v-icon>
+                </v-btn>
+              </v-col>
+            </v-row>
 
             <!-- <p class="title">ITEMS</p>
 
@@ -106,20 +126,47 @@ export default {
     loading: true,
     item: 5,
     detailImage: {},
+    formats: ["zip", "200x200", "400x500", "600x300", "800x250", "1000x500"],
+    selectedFormat: "",
   }),
   methods: {
-    downloadImage() {
+    selectFormatToDownload() {
+      if (this.selectedFormat == this.formats[0]) {
+        this.downloadZip();
+      } else {
+        var self = this;
+        this.formats.forEach(function (format) {
+          console.log(self.selectedFormat);
+          if (format == self.selectedFormat) {
+            var width = format.split("x")[0];
+            var height = format.split("x")[1];
+            self.downloadImage(width, height);
+          }
+        });
+      }
+    },
+    forceDownload(res, name, extension) {
+      var fileURL = window.URL.createObjectURL(new Blob([res.data]));
+      var fileLink = document.createElement("a");
+
+      fileLink.href = fileURL;
+      fileLink.setAttribute("download", `${name}${extension}`);
+      document.body.appendChild(fileLink);
+
+      fileLink.click();
+    },
+    downloadImage(width, height) {
       axios
         .get(
-          "http://localhost:9000/v1/phototheque/image/download/" +
-            this.detailImage.id,
+          `http://localhost:9000/v1/phototheque/image/download/${this.detailImage.id}?width=${width}&height=${height}`,
+          // {
+          //   params: {
+          //     width: 200,
+          //     height: 200,
+          //   },
+          // },
           {
-            params: {
-              width: 200,
-              height: 200,
-            },
-          },
-          {
+            responseType: "blob",
             headers: {
               Authorization: `Bearer ${window.localStorage.accessToken}`,
             },
@@ -127,14 +174,14 @@ export default {
         )
         .then((res) => {
           console.log(res.data);
-          // var fileURL = window.URL.createObjectURL(new Blob([res.data]));
-          // var fileLink = document.createElement("a");
+          var fileURL = window.URL.createObjectURL(new Blob([res.data]));
+          var fileLink = document.createElement("a");
 
-          // fileLink.href = fileURL;
-          // fileLink.setAttribute("download", "file.png");
-          // document.body.appendChild(fileLink);
+          fileLink.href = fileURL;
+          fileLink.setAttribute("download", "file.png");
+          document.body.appendChild(fileLink);
 
-          // fileLink.click();
+          fileLink.click();
         })
         .catch((error) => {
           console.error(error);
@@ -146,20 +193,16 @@ export default {
           "http://localhost:9000/v1/phototheque/image/download/zip/" +
             this.detailImage.id,
           {
+            responseType: "blob",
             headers: {
               Authorization: `Bearer ${window.localStorage.accessToken}`,
             },
           }
         )
         .then((res) => {
-          var fileURL = window.URL.createObjectURL(new Blob([res.data]));
-          var fileLink = document.createElement("a");
-
-          fileLink.href = fileURL;
-          fileLink.setAttribute("download", "file.zip");
-          document.body.appendChild(fileLink);
-
-          fileLink.click();
+          var extension = ".zip";
+          var name = this.detailImage.filename;
+          this.forceDownload(res, name, extension);
         })
         .catch((error) => {
           console.error(error);

@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container>
-      <div class="row">
+      <div class="row"  style="min-height: 60vh;">
         <div class="col-md-12 col-sm-12 col-xs-12">
           <v-divider></v-divider>
           <div class="row text-center">
@@ -56,9 +56,13 @@
           </div>
         </div>
       </div>
-      <!-- <div class="text-center mt-12">
-        <v-pagination v-model="page" :length="6"></v-pagination>
-      </div> -->
+      <div class="text-center mt-12">
+        <v-pagination
+          @input="changePage()"
+          v-model="page"
+          :length="totalPages"
+        ></v-pagination>
+      </div>
     </v-container>
   </div>
 </template>
@@ -70,13 +74,14 @@ import axios from "axios";
 export default {
   data: () => ({
     page: 1,
+    totalPages: 0,
     images: [],
   }),
   computed: {
     filteredImages() {
       if (this.$store.state.searchQuery) {
         return this.images.filter((item) => {
-         return item.title.startsWith(this.$store.state.searchQuery);
+          return item.title.startsWith(this.$store.state.searchQuery);
         });
       } else {
         return this.images;
@@ -90,17 +95,54 @@ export default {
     getImageOfProduct(filename) {
       return script.getImageOfProduct(filename);
     },
+    changePage() {
+      var page = this.page - 1 ;
+      axios
+        .get(
+          `http://localhost:9000/v1/phototheque/image/?isPublished=true&pageNo=${page}&pageSize=1`,
+          // {
+          //   params: {
+          //     isPublished: true,
+          //     pageNo: 0,
+          //     pageSize: 6,
+          //   },
+          // },
+          {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          console.log(res.data);
+          this.images = res.data.content;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
   },
   mounted() {
     axios
-      .get("http://localhost:9000/v1/phototheque/image/?isPublished=true&pageNo=0&pageSize=5", {
-        headers: {
-          Authorization: `Bearer ${window.localStorage.accessToken}`,
-        },
-      })
+      .get(
+        `http://localhost:9000/v1/phototheque/image/?isPublished=true&pageNo=0&pageSize=1`,
+        // {
+        //   params: {
+        //     isPublished: true,
+        //     pageNo: 0,
+        //     pageSize: 6,
+        //   },
+        // },
+        {
+          headers: {
+            Authorization: `Bearer ${window.localStorage.accessToken}`,
+          },
+        }
+      )
       .then((res) => {
         console.log(res.data);
         this.images = res.data.content;
+        this.totalPages = res.data.totalPages
       })
       .catch((error) => {
         console.error(error);

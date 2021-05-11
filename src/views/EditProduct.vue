@@ -1,52 +1,8 @@
 
 <template>
   <v-container class="edit_product_page">
-    <v-row class="d-flex align-center flex-column">
-      <v-col cols="12" md="6">
-        <v-text-field
-          :rules="rules"
-          counter
-          v-model="title"
-          color="blue darken-2"
-          label="Titre"
-          required
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-textarea
-          :rules="rulesDesc"
-          counter
-          name="input-7-1"
-          placeholder="Ajouter une description"
-          v-model="description"
-        ></v-textarea>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12" md="5" id="file-drag-drop">
-        <form ref="fileform">
-          <span type="file" class="drop-files">Drop the files here!</span>
-        </form>
-
-        <progress max="100" :value.prop="uploadPercentage"></progress>
-
-        <div v-for="(file, key) in files" :key="file.id" class="file-listing">
-          <img class="preview" v-bind:ref="'preview' + parseInt(key)" />
-          {{ file.name }}
-          <div class="remove-container">
-            <a class="remove" v-on:click="removeFile(key)">Remove</a>
-          </div>
-        </div>
-
-        <a
-          class="submit-button"
-          v-on:click="submitFiles()"
-          v-show="files.length > 0"
-          >Publier</a
-        > </v-col
-      ><v-col cols="12" md="2" class="or text-center"><p>OR</p></v-col>
-
-      <v-col cols="12" md="5" class="file-input">
+    <v-card class="mx-auto pa-4 mt-6" max-width="750">
+      <v-form ref="form" v-model="valid" lazy-validation class="mt-6">
         <label class="labelFile"
           >File
           <input
@@ -56,15 +12,59 @@
             v-on:change="handleFileUpload()"
           />
         </label>
-        <a class="submit-button" v-if="file" v-on:click="submitFile()"
-          >Publier</a
-        >
-      </v-col>
-    </v-row>
+        <!-- <v-file-input
+        show-size
+        counter
+        multiple
+        label="File input"
+        ref="file"
+        type="file"
+        id="file"
+        v-on:change="handleFileUpload()"
+      ></v-file-input> -->
 
-    <!--    
-   
-    < -->
+        <v-text-field
+          :rules="rules"
+          counter
+          v-model="title"
+          color="blue darken-2"
+          label="Titre"
+          required
+        ></v-text-field>
+
+        <v-textarea
+          :rules="rulesDesc"
+          counter
+          name="input-7-1"
+          placeholder="Ajouter une description"
+          v-model="description"
+        ></v-textarea>
+
+        <v-btn
+          :disabled="!valid"
+          color="success"
+          class="mr-4"
+          @click="submitFile()"
+        >
+          Publier
+        </v-btn>
+
+        <!-- <v-btn color="error" class="mr-4" @click="reset"> Reset Form </v-btn> -->
+
+        <!-- <v-btn color="warning" @click="resetValidation"> Reset Validation </v-btn> -->
+      </v-form>
+    </v-card>
+    <v-snackbar
+      v-model="snackbar"
+      :value="true"
+      absolute
+      bottom
+      color="success"
+      outlined
+      right
+    >
+      {{ text }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -76,87 +76,25 @@ export default {
     */
   data() {
     return {
-      dragAndDropCapable: false,
+      snackbar: false,
+      text: `Vous venez de publier une image, Bravo !`,
+      valid: true,
       title: "",
       description: "",
       files: [],
       file: "",
-      uploadPercentage: 0,
       rules: [(v) => v.length > 4 || "Min 4 characters"],
       rulesDesc: [(v) => v.length > 1 || "Min 1 character"],
     };
   },
 
-  mounted() {
-    /*
-        Determine if drag and drop functionality is capable in the browser
-      */
-    this.dragAndDropCapable = this.determineDragAndDropCapable();
-
-    /*
-        If drag and drop capable, then we continue to bind events to our elements.
-      */
-    if (this.dragAndDropCapable) {
-      /*
-          Listen to all of the drag events and bind an event listener to each
-          for the fileform.
-        */
-      [
-        "drag",
-        "dragstart",
-        "dragend",
-        "dragover",
-        "dragenter",
-        "dragleave",
-        "drop",
-      ].forEach(
-        function (evt) {
-          /*
-            For each event add an event listener that prevents the default action
-            (opening the file in the browser) and stop the propagation of the event (so
-            no other elements open the file in the browser)
-          */
-          this.$refs.fileform.addEventListener(
-            evt,
-            function (e) {
-              e.preventDefault();
-              e.stopPropagation();
-            }.bind(this),
-            false
-          );
-        }.bind(this)
-      );
-
-      /*
-          Add an event listener for drop to the form
-        */
-      this.$refs.fileform.addEventListener(
-        "drop",
-        function (e) {
-          /*
-            Capture the files from the drop event and add them to our local files
-            array.
-          */
-          for (let i = 0; i < e.dataTransfer.files.length; i++) {
-            this.files.push(e.dataTransfer.files[i]);
-            this.getImagePreviews();
-          }
-        }.bind(this)
-      );
-    }
-  },
-
   methods: {
+    handleFileUpload() {
+      this.file = this.$refs.file.files[0];
+    },
     submitFile() {
-      /*
-                Initialize the form data
-            */
-
       let formData = new FormData();
 
-      /*
-                Add the form data we need to submit
-            */
       formData.append("title", this.title);
       formData.append("description", this.description);
       formData.append("file", this.file);
@@ -164,10 +102,7 @@ export default {
       for (var pair of formData.entries()) {
         console.log(pair[0] + ", " + pair[1]);
       }
-
-      /*
-          Make the request to the POST /single-file URL
-        */
+      var self = this;
       axios
         .post("http://localhost:9000/v1/phototheque/image/upload", formData, {
           headers: {
@@ -177,218 +112,15 @@ export default {
         })
         .then(function () {
           console.log("SUCCESS!!");
+          self.snackbar = true;
         })
         .catch(function () {
           console.log("FAILURE!!");
         });
-    },
-
-    /*
-        Handles a change on the file upload
-      */
-    handleFileUpload() {
-      this.file = this.$refs.file.files[0];
-    },
-    /*
-        Determines if the drag and drop functionality is in the
-        window
-      */
-    determineDragAndDropCapable() {
-      /*
-          Create a test element to see if certain events
-          are present that let us do drag and drop.
-        */
-      var div = document.createElement("div");
-
-      /*
-          Check to see if the `draggable` event is in the element
-          or the `ondragstart` and `ondrop` events are in the element. If
-          they are, then we have what we need for dragging and dropping files.
-
-          We also check to see if the window has `FormData` and `FileReader` objects
-          present so we can do our AJAX uploading
-        */
-      return (
-        ("draggable" in div || ("ondragstart" in div && "ondrop" in div)) &&
-        "FormData" in window &&
-        "FileReader" in window
-      );
-    },
-
-    /*
-        Gets the image preview for the file.
-      */
-    getImagePreviews() {
-      /*
-          Iterate over all of the files and generate an image preview for each one.
-        */
-      for (let i = 0; i < this.files.length; i++) {
-        /*
-            Ensure the file is an image file
-          */
-        if (/\.(jpe?g|png|gif)$/i.test(this.files[i].name)) {
-          /*
-              Create a new FileReader object
-            */
-          let reader = new FileReader();
-
-          /*
-              Add an event listener for when the file has been loaded
-              to update the src on the file preview.
-            */
-          reader.addEventListener(
-            "load",
-            function () {
-              this.$refs["preview" + parseInt(i)][0].src = reader.result;
-            }.bind(this),
-            false
-          );
-
-          /*
-              Read the data for the file in through the reader. When it has
-              been loaded, we listen to the event propagated and set the image
-              src to what was loaded from the reader.
-            */
-          reader.readAsDataURL(this.files[i]);
-        } else {
-          /*
-              We do the next tick so the reference is bound and we can access it.
-            */
-          this.$nextTick(function () {
-            this.$refs["preview" + parseInt(i)][0].src = "/images/file.png";
-          });
-        }
-      }
-    },
-
-    /*
-        Submits the files to the server
-      */
-    submitFiles() {
-      let formData = new FormData();
-      let file = this.files[0];
-
-      formData.append("title", this.title);
-      formData.append("description", this.description);
-      formData.append("file", file);
-
-      for (var pair of formData.entries()) {
-        console.log(pair[0] + ", " + pair[1]);
-      }
-
-      axios
-        .post("http://localhost:9000/v1/phototheque/image/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${window.localStorage.accessToken}`,
-          },
-        })
-        .then(function () {
-          console.log("SUCCESS!!");
-        })
-        .catch(function () {
-          console.log("FAILURE!!");
-        });
-    },
-
-    /*
-        Removes a select file the user has uploaded
-      */
-    removeFile(key) {
-      this.files.splice(key, 1);
     },
   },
 };
 </script>
 
 <style >
-#file-drag-drop,
-.or,
-.file-input {
-  align-self: center;
-}
-#file-drag-drop,
-.file-input {
-  height: 500px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
-
-.labelFile {
-  margin: 2rem;
-}
-
-.file-input {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.or {
-  font-weight: bold;
-}
-
-form {
-  display: block;
-  height: 200px;
-  width: 200px;
-  border: 1px solid #ccc;
-  margin: auto;
-  margin-top: 40px;
-  text-align: center;
-  line-height: 200px;
-  border-radius: 4px;
-}
-
-div.file-listing {
-  display: flex;
-  flex-direction: column;
-
-  margin: auto;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-div.file-listing img {
-  /* max-height: 100px; */
-  width: 100px;
-}
-
-div.remove-container {
-  text-align: center;
-}
-
-div.remove-container a {
-  color: red;
-  cursor: pointer;
-}
-
-a.submit-button {
-  display: block;
-  margin-inline: auto;
-  text-align: center;
-  width: 200px;
-  padding: 10px;
-  text-transform: uppercase;
-  background-color: #2d3753;
-  color: white;
-  font-weight: bold;
-  margin-top: 10px;
-  transition: all 0.8;
-}
-
-a.submit-button:hover {
-  background-color: white;
-  color: #2d3753;
-  border: 1px solid #2d3753;
-}
-
-progress {
-  display: block;
-  width: 200px;
-  margin: auto;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
 </style>
