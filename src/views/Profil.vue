@@ -37,7 +37,7 @@
                 <div
                   class="col-md-3 col-sm-6 col-xs-12"
                   :key="image.id"
-                  v-for="image in myImages"
+                  v-for="image in listOfImages"
                 >
                   <v-card
                     class="mx-auto"
@@ -60,44 +60,42 @@
                         style="text-decoration: none"
                         >{{ image.title }}</router-link
                       >
-                      <v-row>
-                        <v-col cols="9" class="py-0">
-                          <div>{{ formatDate(image.createdAt) }}</div></v-col
-                        >
-                        <v-col cols="3">
-                          <v-menu offset-y>
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-icon right v-bind="attrs" v-on="on"
-                                >mdi-dots-vertical</v-icon
-                              >
-                            </template>
-                            <v-list>
-                              <v-list-item class="flex-column">
-                                <v-list-item-title
-                                  style="border-bottom: 1px solid lightgray"
-                                >
-                                  <a
-                                    class="lien"
-                                    @click="
-                                      showItem(image.isPublished, image.id)
-                                    "
-                                  >
-                                    <span v-if="image.isPublished">Cacher</span>
-                                    <span v-else>Republier</span></a
-                                  >
-                                </v-list-item-title>
-
-                                <v-list-item-title>
-                                  <a class="lien" @click="deleteItem(image.id)"
-                                    >Supprimer</a
-                                  >
-                                </v-list-item-title>
-                              </v-list-item>
-                            </v-list>
-                          </v-menu>
-                        </v-col>
-                      </v-row>
                     </v-card-text>
+                    <v-row class="ml-1">
+                      <v-col cols="9" class="py-0">
+                        <div>{{ formatDate(image.createdAt) }}</div></v-col
+                      >
+                      <v-col cols="3">
+                        <v-menu offset-y>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-icon right v-bind="attrs" v-on="on"
+                              >mdi-dots-vertical</v-icon
+                            >
+                          </template>
+                          <v-list>
+                            <v-list-item class="flex-column">
+                              <v-list-item-title
+                                style="border-bottom: 1px solid lightgray"
+                              >
+                                <a
+                                  class="lien"
+                                  @click="showItem(image.isPublished, image.id)"
+                                >
+                                  <span v-if="image.isPublished">Cacher</span>
+                                  <span v-else>Republier</span></a
+                                >
+                              </v-list-item-title>
+
+                              <v-list-item-title>
+                                <a class="lien" @click="deleteItem(image.id)"
+                                  >Supprimer</a
+                                >
+                              </v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
+                      </v-col>
+                    </v-row>
                   </v-card>
                 </div>
               </v-row>
@@ -106,6 +104,18 @@
         </v-tabs>
       </div>
     </div>
+    <v-snackbar
+      class="snackbar"
+      v-model="snackbar"
+      :value="true"
+      absolute
+      bottom
+      color="error"
+      outlined
+      right
+    >
+      {{ text }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -118,7 +128,16 @@ import { deleteImage } from "../backend/deleteImage";
 export default {
   data: () => ({
     myImages: {},
+    snackbar: false,
+    text: `Vous venez de supprimer une image, Bravo !`,
   }),
+  computed: {
+    listOfImages() {
+      return Object.values(this.myImages).filter(
+        (el) => el.isDeleted === false
+      );
+    },
+  },
   methods: {
     formatDate(param) {
       return script.formatDate(param);
@@ -129,6 +148,7 @@ export default {
     deleteItem(id) {
       // var self = this;
       deleteImage.deleteImage(id);
+      this.snackbar = true
       // self.$router.go(0);
     },
     showItem(isPublished, id) {
@@ -148,14 +168,17 @@ export default {
   },
   mounted() {
     axios
-      .get("http://localhost:9000/v1/phototheque/images/myself", {
-        headers: {
-          Authorization: `Bearer ${window.localStorage.accessToken}`,
-        },
-      })
+      .get(
+        "http://localhost:9000/v1/phototheque/image/myself?pageNo=0&pageSize=100",
+        {
+          headers: {
+            Authorization: `Bearer ${window.localStorage.accessToken}`,
+          },
+        }
+      )
       .then((res) => {
-        console.log(res.data);
-        this.myImages = res.data;
+        console.log(res.data.content);
+        this.myImages = res.data.content;
       })
       .catch((error) => {
         console.error(error);
@@ -171,5 +194,9 @@ export default {
 .label {
   color: lightgray;
   font-weight: 700;
+}
+.snackbar {
+  position: fixed;
+  bottom: 200px;
 }
 </style>

@@ -391,3 +391,45 @@ progress {
   margin-bottom: 20px;
 }
 </style>
+
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++
+
+   id: this.detailImage.id,
+            filename: this.detailImage.filename,
+            title: this.detailImage.title,
+            description: this.detailImage.description,
+            isPublished: this.detailImage.isPublished,
+            isDeleted: this.detailImage.isDeleted,
+            createdAt: this.detailImage.createdAt,
+            user: {
+              id: this.detailImage.user.id,
+              email: this.detailImage.user.email,
+              username: this.detailImage.user.username,
+              password: this.detailImage.user.password,
+              createdAt: this.detailImage.user.createdAt,
+              updatedAt: this.detailImage.user.updatedAt,
+              role: {
+                id: this.detailImage.user.role.id,
+                name: this.detailImage.user.role.name,
+                description: this.detailImage.user.role.description,
+              },
+            },
+            itemPictures: [
+              {
+                id: this.detailImage.itemPictures.id,
+                name: this.detailImage.itemPictures.name,
+                probability: this.detailImage.itemPictures.probability,
+              },
+            ],
+            categories: [
+              {
+                id: this.detailImage.categories.id,
+                name: this.detailImage.itemPictures.name,
+                description: this.detailImage.itemPictures.description,
+                pictures: this.detailImage.itemPictures.pictures,
+              },
+            ],

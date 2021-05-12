@@ -8,7 +8,8 @@
             :src="getImageOfProduct(detailImage.filename)"
           />
         </div>
-        <div class="col-md-7 col-sm-7 col-xs-12 d-flex align-center">
+
+        <div class="col-md-5 col-sm-7 col-xs-12 d-flex align-center">
           <div class="pl-6">
             <p class="display-1 mb-0">
               {{ detailImage.title }}
@@ -82,6 +83,61 @@
               >
               <v-btn outlined tile>Ajouter aux favoris</v-btn>
             </div> -->
+
+            <v-dialog transition="dialog-bottom-transition" max-width="600">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  class="modify_btn"
+                  color="dark"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  Modifier
+                </v-btn>
+              </template>
+              <template v-if="!loading" v-slot:default="dialog">
+                <v-card>
+                  <v-toolbar color="primary" dark
+                    >Modifier les informations de cet utilisateur</v-toolbar
+                  >
+                  <v-card-text>
+                    <v-form>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12" md="12">
+                            <v-text-field
+                              v-model="detailImage.title"
+                              label="Titre"
+                              required
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col cols="12" md="12">
+                            <v-textarea
+                              v-model="detailImage.description"
+                              label="description"
+                              required
+                            ></v-textarea>
+                          </v-col>
+                        </v-row>
+                        <v-row class="d-flex justify-center">
+                          <v-btn
+                            @click="updateProduct(detailImage.id)"
+                            color="success"
+                            >Valider</v-btn
+                          >
+                        </v-row>
+                      </v-container>
+                    </v-form>
+                  </v-card-text>
+                  <v-card-actions class="justify-end">
+                    <v-btn text @click="dialog.value = false">Close</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </template>
+            </v-dialog>
           </div>
         </div>
       </div>
@@ -130,6 +186,27 @@ export default {
     selectedFormat: "",
   }),
   methods: {
+    updateProduct(id) {
+      axios
+        .patch(
+          `http://localhost:9000/v1/phototheque/image/update/${id}`,
+          {
+            title: this.detailImage.title,
+            description: this.detailImage.title,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.accessToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          console.log(res.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
     selectFormatToDownload() {
       if (this.selectedFormat == this.formats[0]) {
         this.downloadZip();
@@ -238,5 +315,4 @@ export default {
   },
 };
 </script>
-
 

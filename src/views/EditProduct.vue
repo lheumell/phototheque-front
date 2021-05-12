@@ -1,8 +1,19 @@
 
 <template>
   <v-container class="edit_product_page">
-    <v-card class="mx-auto pa-4 mt-6" max-width="750">
-      <v-form ref="form" v-model="valid" lazy-validation class="mt-6">
+    <v-card
+      class="d-flex flex-column align-center mx-auto pa-4 mt-6"
+      max-width="900"
+    >
+      <v-card-title>PUBLIER UNE IMAGE</v-card-title>
+
+      <v-form
+        ref="form"
+        v-model="valid"
+        lazy-validation
+        class="mt-6"
+        style="max-width: 100vw"
+      >
         <label class="labelFile"
           >File
           <input
@@ -22,31 +33,34 @@
         id="file"
         v-on:change="handleFileUpload()"
       ></v-file-input> -->
+        <v-col>
+          <v-text-field
+            :rules="rules"
+            counter
+            v-model="title"
+            color="blue darken-2"
+            label="Titre"
+            required
+          ></v-text-field>
+        </v-col>
 
-        <v-text-field
-          :rules="rules"
-          counter
-          v-model="title"
-          color="blue darken-2"
-          label="Titre"
-          required
-        ></v-text-field>
-
-        <v-textarea
-          :rules="rulesDesc"
-          counter
-          name="input-7-1"
-          placeholder="Ajouter une description"
-          v-model="description"
-        ></v-textarea>
+        <v-col>
+          <v-textarea
+            :rules="rulesDesc"
+            counter
+            name="input-7-1"
+            placeholder="Ajouter une description"
+            v-model="description"
+          ></v-textarea>
+        </v-col>
 
         <v-btn
-          :disabled="!valid"
-          color="success"
-          class="mr-4"
           @click="submitFile()"
+          :disabled="!valid"
+          class="white primary--text pr-0 d-flex ma-auto"
         >
-          Publier
+          <span>Publier</span>
+          <v-icon class="mr-1">mdi-menu-right</v-icon>
         </v-btn>
 
         <!-- <v-btn color="error" class="mr-4" @click="reset"> Reset Form </v-btn> -->
@@ -78,7 +92,7 @@ export default {
     return {
       snackbar: false,
       text: `Vous venez de publier une image, Bravo !`,
-      valid: true,
+      valid: false,
       title: "",
       description: "",
       files: [],

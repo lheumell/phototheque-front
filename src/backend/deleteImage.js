@@ -2,7 +2,7 @@ import axios from "axios";
 export const deleteImage = {
   deleteImage: function(id) {
     axios
-      .put("http://localhost:9000/v1/phototheque/image/delete/" + id, {
+      .delete("http://localhost:9000/v1/phototheque/image/" + id, {
         headers: {
           Authorization: `Bearer ${window.localStorage.accessToken}`
         }
